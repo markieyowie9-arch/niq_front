@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomerLayout from "@/components/layouts/CostumerLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -40,7 +41,11 @@ export default function Cart() {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (!isLoggedIn && cartItems.length > 0) {
+    if (isLoggedIn) {
+      // persist to backend when logged in (mock or firebase)
+      // TODO: replace 'current' with real user id from auth context
+      dataProvider.saveCartForUser("current", cartItems).catch(() => {});
+    } else if (cartItems.length > 0) {
       localStorage.setItem("cart", JSON.stringify(cartItems));
     }
   }, [cartItems, isLoggedIn]);

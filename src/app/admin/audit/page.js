@@ -1,54 +1,28 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function AuditTrail() {
-  const [logs, setLogs] = useState([
-    {
-      id: 1,
-      timestamp: "2024-02-20 09:23:45",
-      user: "Admin User",
-      action: "Login",
-      details: "Logged in successfully",
-      ip: "192.168.1.100",
-    },
-    {
-      id: 2,
-      timestamp: "2024-02-20 09:30:12",
-      user: "Admin User",
-      action: "Update Product",
-      details: "Updated price of Laundry Detergent from ₱120 to ₱125",
-      ip: "192.168.1.100",
-    },
-    {
-      id: 3,
-      timestamp: "2024-02-20 10:15:33",
-      user: "Employee One",
-      action: "Process Order",
-      details: "Marked order ORD-002 as Processing",
-      ip: "192.168.1.101",
-    },
-    {
-      id: 4,
-      timestamp: "2024-02-20 11:05:21",
-      user: "Employee One",
-      action: "Update Inventory",
-      details: "Added 20 units to Dishwashing Liquid stock",
-      ip: "192.168.1.101",
-    },
-    {
-      id: 5,
-      timestamp: "2024-02-20 13:42:08",
-      user: "Admin User",
-      action: "Cancel Order",
-      details: "Cancelled order ORD-004 - Customer request",
-      ip: "192.168.1.100",
-    },
-  ]);
-
+  const [logs, setLogs] = useState([]);
   const [filterUser, setFilterUser] = useState("all");
   const [filterAction, setFilterAction] = useState("all");
   const [dateRange, setDateRange] = useState("today");
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const l = await dataProvider.getAuditLogs();
+        if (!mounted) return;
+        setLogs(l || []);
+      } catch (err) {
+        setLogs([]);
+      }
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   const users = ["all", ...new Set(logs.map((log) => log.user))];
   const actions = ["all", ...new Set(logs.map((log) => log.action))];
@@ -83,6 +57,7 @@ export default function AuditTrail() {
                 ))}
               </select>
             </div>
+
             <div className="col-md-3">
               <label className="form-label">Action</label>
               <select
@@ -97,6 +72,7 @@ export default function AuditTrail() {
                 ))}
               </select>
             </div>
+
             <div className="col-md-3">
               <label className="form-label">Date Range</label>
               <select
@@ -110,6 +86,7 @@ export default function AuditTrail() {
                 <option value="custom">Custom Range</option>
               </select>
             </div>
+
             <div className="col-md-3">
               <label className="form-label">Search</label>
               <input
@@ -142,7 +119,7 @@ export default function AuditTrail() {
                     <td className="font-monospace small">{log.timestamp}</td>
                     <td>
                       <span
-                        className={`badge bg-${log.user.includes("Admin") ? "danger" : "info"}`}
+                        className={`badge bg-${(log.user || "").includes("Admin") ? "danger" : "info"}`}
                       >
                         {log.user}
                       </span>
@@ -152,7 +129,7 @@ export default function AuditTrail() {
                         className={`badge bg-${
                           log.action === "Login"
                             ? "success"
-                            : log.action.includes("Update")
+                            : log.action && log.action.includes("Update")
                               ? "warning"
                               : log.action === "Cancel Order"
                                 ? "danger"

@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function Reports() {
   const [reportType, setReportType] = useState("sales");
@@ -22,6 +23,24 @@ export default function Reports() {
     { id: "year", name: "This Year" },
     { id: "custom", name: "Custom Range" },
   ];
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        // preload data for reports when backend enabled
+        await Promise.all([
+          dataProvider.getOrders(),
+          dataProvider.getProducts(),
+          dataProvider.getInventory(),
+        ]);
+      } catch (err) {
+        // ignore — fallback UI remains
+      }
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   return (
     <AdminLayout>

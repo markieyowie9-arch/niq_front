@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import Link from "next/link";
+import dataProvider from "@/utils/dataProvider";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -20,42 +21,48 @@ export default function AdminDashboard() {
   */
 
   // 📊 Dashboard Stats (Replace with API later)
-  const [stats] = useState({
-    totalSales: 45678,
-    totalOrders: 156,
-    lowStock: 8,
-    criticalStock: 3,
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    totalOrders: 0,
+    lowStock: 0,
+    criticalStock: 0,
   });
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [criticalItems, setCriticalItems] = useState([]);
 
-  const [recentOrders] = useState([
-    {
-      id: "ORD-001",
-      customer: "John Doe",
-      total: 1250,
-      status: "Pending",
-      date: "2024-02-20",
-    },
-    {
-      id: "ORD-002",
-      customer: "Jane Smith",
-      total: 890,
-      status: "Processing",
-      date: "2024-02-20",
-    },
-    {
-      id: "ORD-003",
-      customer: "Bob Wilson",
-      total: 2340,
-      status: "Delivered",
-      date: "2024-02-19",
-    },
-  ]);
-
-  const [criticalItems] = useState([
-    { product: "Dishwashing Liquid", stock: 2, threshold: 10 },
-    { product: "Bleach", stock: 5, threshold: 15 },
-    { product: "Car Shampoo", stock: 3, threshold: 20 },
-  ]);
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const [products, orders] = await Promise.all([
+          dataProvider.getProducts(),
+          dataProvider.getOrders(),
+        ]);
+        if (!mounted) return;
+        const totalSales = orders.reduce((s, o) => s + (o.total || 0), 0);
+        const totalOrders = orders.length;
+        const lowStock = (products || []).filter((p) => p.stock <= 10).length;
+        const criticalStock = (products || []).filter(
+          (p) => p.stock === 0,
+        ).length;
+        setStats({ totalSales, totalOrders, lowStock, criticalStock });
+        setRecentOrders((orders || []).slice(0, 3));
+        setCriticalItems(
+          (products || [])
+            .filter((p) => p.stock <= 5)
+            .map((p) => ({
+              product: p.name || p.product || p.id,
+              stock: p.stock,
+              threshold: 5,
+            })),
+        );
+      } catch (err) {
+        // keep defaults
+      }
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   // 📡 Future API Example (uncomment later)
   /*

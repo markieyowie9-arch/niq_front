@@ -1,42 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function ProductManagement() {
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "Laundry Detergent",
-      price: 120,
-      stock: 45,
-      category: "Detergent",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Dishwashing Liquid",
-      price: 85,
-      stock: 2,
-      category: "Dishwashing",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Car Shampoo",
-      price: 150,
-      stock: 8,
-      category: "Car Care",
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "Bleach",
-      price: 60,
-      stock: 0,
-      category: "Cleaning",
-      status: "Inactive",
-    },
-  ]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      const prods = await dataProvider.getProducts();
+      if (!mounted) return;
+      setProducts(prods || []);
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);

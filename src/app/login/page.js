@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthProvider";
 
 const DEV_MODE = true;
 
@@ -20,7 +21,13 @@ export default function Login() {
       return;
     }
 
-    // Real Firebase login goes here later
+    try {
+      const { signIn } = useAuth();
+      await signIn(email, password);
+      router.push("/admin/dashboard");
+    } catch (err) {
+      setError("Login failed. Check credentials.");
+    }
   };
 
   return (

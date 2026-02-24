@@ -1,55 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function OrderManagement() {
-  const [orders, setOrders] = useState([
-    {
-      id: "ORD-001",
-      customer: "John Doe",
-      date: "2024-02-20",
-      total: 1250,
-      status: "Pending",
-      payment: "GCash",
-      items: 3,
-    },
-    {
-      id: "ORD-002",
-      customer: "Jane Smith",
-      date: "2024-02-20",
-      total: 890,
-      status: "Processing",
-      payment: "PayMaya",
-      items: 2,
-    },
-    {
-      id: "ORD-003",
-      customer: "Bob Wilson",
-      date: "2024-02-19",
-      total: 2340,
-      status: "Delivered",
-      payment: "Bank",
-      items: 5,
-    },
-    {
-      id: "ORD-004",
-      customer: "Alice Brown",
-      date: "2024-02-19",
-      total: 560,
-      status: "Cancelled",
-      payment: "GCash",
-      items: 1,
-    },
-    {
-      id: "ORD-005",
-      customer: "Charlie Davis",
-      date: "2024-02-18",
-      total: 1780,
-      status: "Delivered",
-      payment: "PayPal",
-      items: 4,
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      const o = await dataProvider.getOrders();
+      if (!mounted) return;
+      setOrders(o || []);
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [showCancelled, setShowCancelled] = useState(true);

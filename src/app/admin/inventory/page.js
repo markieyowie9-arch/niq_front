@@ -1,46 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function InventoryManagement() {
-  const [inventory, setInventory] = useState([
-    {
-      id: 1,
-      product: "Laundry Detergent",
-      stock: 45,
-      buffer: 20,
-      critical: 10,
-      mlSuggestion: 25,
-      lastUpdated: "2024-02-20",
-    },
-    {
-      id: 2,
-      product: "Dishwashing Liquid",
-      stock: 2,
-      buffer: 15,
-      critical: 8,
-      mlSuggestion: 20,
-      lastUpdated: "2024-02-19",
-    },
-    {
-      id: 3,
-      product: "Car Shampoo",
-      stock: 8,
-      buffer: 15,
-      critical: 8,
-      mlSuggestion: 15,
-      lastUpdated: "2024-02-18",
-    },
-    {
-      id: 4,
-      product: "Bleach",
-      stock: 25,
-      buffer: 15,
-      critical: 8,
-      mlSuggestion: 15,
-      lastUpdated: "2024-02-20",
-    },
-  ]);
+  const [inventory, setInventory] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const inv = await dataProvider.getInventory();
+        if (!mounted) return;
+        setInventory(inv || []);
+      } catch (err) {
+        setInventory([]);
+      }
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);

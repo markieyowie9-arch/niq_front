@@ -1,34 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function EmployeeManagement() {
-  const [employees, setEmployees] = useState([
-    {
-      id: 1,
-      name: "Admin User",
-      email: "admin@niq.com",
-      role: "Admin",
-      lastLogin: "2024-02-20",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Employee One",
-      email: "emp1@niq.com",
-      role: "Employee",
-      lastLogin: "2024-02-19",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Employee Two",
-      email: "emp2@niq.com",
-      role: "Employee",
-      lastLogin: "2024-02-18",
-      status: "Inactive",
-    },
-  ]);
+  const [employees, setEmployees] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const emps = await dataProvider.getEmployees();
+        if (!mounted) return;
+        setEmployees(emps || []);
+      } catch (err) {
+        setEmployees([]);
+      }
+    }
+    load();
+    return () => (mounted = false);
+  }, []);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);

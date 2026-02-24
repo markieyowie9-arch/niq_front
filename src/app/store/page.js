@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomerLayout from "@/components/layouts/CostumerLayout";
+import dataProvider from "@/utils/dataProvider";
 
 export default function ProductCatalog() {
   const [products, setProducts] = useState([]);
@@ -46,10 +47,35 @@ export default function ProductCatalog() {
   ];
 
   useEffect(() => {
-    setProducts(sampleProducts);
-    // Extract unique categories
-    const cats = ["all", ...new Set(sampleProducts.map((p) => p.category))];
-    setCategories(cats);
+    let mounted = true;
+
+    async function load() {
+      try {
+        const prods = await dataProvider.getProducts();
+        if (!mounted) return;
+        setProducts(prods && prods.length ? prods : sampleProducts);
+        const cats = [
+          "all",
+          ...new Set(
+            (prods && prods.length ? prods : sampleProducts).map(
+              (p) => p.category,
+            ),
+          ),
+        ];
+        setCategories(cats);
+      } catch (err) {
+        setProducts(sampleProducts);
+        setCategories([
+          "all",
+          ...new Set(sampleProducts.map((p) => p.category)),
+        ]);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filteredProducts = products.filter((p) => {

@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { auth } from "@/utils/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useAuth } from "@/context/AuthProvider";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,6 +11,8 @@ export default function Login() {
   const [attempts, setAttempts] = useState(0);
   const [locked, setLocked] = useState(false);
   const router = useRouter();
+
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,10 +23,11 @@ export default function Login() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signIn(email, password);
       router.push("/admin/dashboard");
     } catch (err) {
-      console.error("An error occurred:", err.message);
+      console.error("An error occurred:", err?.message || err);
+      setError("Login failed. Check credentials.");
     }
   };
 
