@@ -1,10 +1,55 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+
 import AdminLayout from "@/components/layouts/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import dataProvider from "@/utils/dataProvider";
+
+const stockVariant = (stock) => {
+  if (stock === 0) return "destructive";
+  if (stock < 10) return "warning";
+  return "success";
+};
 
 export default function ProductManagement() {
   const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -17,10 +62,6 @@ export default function ProductManagement() {
     return () => (mounted = false);
   }, []);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-
   const filteredProducts = products.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,268 +70,232 @@ export default function ProductManagement() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Product Management</h2>
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowAddModal(true)}
-        >
-          + Add New Product
-        </button>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">Product Management</h2>
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Product
+        </Button>
       </div>
 
       {/* Search and Filter */}
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <input
-            type="text"
-            className="form-control"
+      <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <div className="space-y-2 md:col-span-1">
+          <Label>Search</Label>
+          <Input
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="col-md-3">
-          <select className="form-select">
-            <option>All Categories</option>
-            <option>Detergent</option>
-            <option>Dishwashing</option>
-            <option>Car Care</option>
-            <option>Cleaning</option>
-          </select>
+        <div className="space-y-2">
+          <Label>Category</Label>
+          <Select>
+            <SelectTrigger>
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="Detergent">Detergent</SelectItem>
+              <SelectItem value="Dishwashing">Dishwashing</SelectItem>
+              <SelectItem value="Car Care">Car Care</SelectItem>
+              <SelectItem value="Cleaning">Cleaning</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <div className="col-md-3">
-          <select className="form-select">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
-          </select>
+        <div className="space-y-2">
+          <Label>Status</Label>
+          <Select>
+            <SelectTrigger>
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="Active">Active</SelectItem>
+              <SelectItem value="Inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Products Table */}
-      <div className="card">
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Image</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Price</th>
-                  <th>Stock</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => (
-                  <tr key={product.id}>
-                    <td>{product.id}</td>
-                    <td>
-                      <div
-                        style={{
-                          width: "50px",
-                          height: "50px",
-                          backgroundColor: "#f0f0f0",
-                        }}
-                      ></div>
-                    </td>
-                    <td>{product.name}</td>
-                    <td>{product.category}</td>
-                    <td>₱{product.price}</td>
-                    <td>
-                      <span
-                        className={`badge bg-${
-                          product.stock === 0
-                            ? "danger"
-                            : product.stock < 10
-                              ? "warning"
-                              : "success"
-                        }`}
-                      >
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge bg-${product.status === "Active" ? "success" : "secondary"}`}
-                      >
-                        {product.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-sm btn-outline-primary me-2"
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Image</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProducts.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>{product.id}</TableCell>
+                  <TableCell>
+                    <div className="h-12 w-12 rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>₱{product.price}</TableCell>
+                  <TableCell>
+                    <Badge variant={stockVariant(product.stock)}>
+                      {product.stock}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        product.status === "Active" ? "success" : "secondary"
+                      }
+                    >
+                      {product.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setEditingProduct(product)}
                       >
+                        <Pencil className="mr-1 h-3 w-3" />
                         Edit
-                      </button>
-                      <button className="btn btn-sm btn-outline-danger">
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="mr-1 h-3 w-3" />
                         Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Product Modal */}
-      {(showAddModal || editingProduct) && (
-        <div className="modal show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingProduct ? "Edit Product" : "Add New Product"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingProduct(null);
-                  }}
-                ></button>
+      <Dialog
+        open={showAddModal || !!editingProduct}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddModal(false);
+            setEditingProduct(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? "Edit Product" : "Add New Product"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingProduct
+                ? "Update product details and inventory thresholds."
+                : "Create a new product entry for your catalog."}
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Product Name *</Label>
+                <Input required />
               </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Product Name *</label>
-                      <input type="text" className="form-control" required />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Category *</label>
-                      <select className="form-select" required>
-                        <option>Detergent</option>
-                        <option>Dishwashing</option>
-                        <option>Car Care</option>
-                        <option>Cleaning</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Price *</label>
-                      <div className="input-group">
-                        <span className="input-group-text">₱</span>
-                        <input
-                          type="number"
-                          className="form-control"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Stock Quantity *</label>
-                      <input type="number" className="form-control" required />
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Description *</label>
-                    <textarea
-                      className="form-control"
-                      rows="3"
-                      required
-                    ></textarea>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Product Images *</label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      multiple
-                      accept="image/*"
-                      required
-                    />
-                    <small className="text-muted">
-                      You can select multiple images
-                    </small>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Buffer Level</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        placeholder="Default: 10"
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Critical Level</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        placeholder="Default: 5"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Status</label>
-                    <div>
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="status"
-                          id="statusActive"
-                          defaultChecked
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="statusActive"
-                        >
-                          Active
-                        </label>
-                      </div>
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="status"
-                          id="statusInactive"
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="statusInactive"
-                        >
-                          Inactive
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingProduct(null);
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="button" className="btn btn-primary">
-                  {editingProduct ? "Update Product" : "Save Product"}
-                </button>
+              <div className="space-y-2">
+                <Label>Category *</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Detergent">Detergent</SelectItem>
+                    <SelectItem value="Dishwashing">Dishwashing</SelectItem>
+                    <SelectItem value="Car Care">Car Care</SelectItem>
+                    <SelectItem value="Cleaning">Cleaning</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Price *</Label>
+                <div className="flex">
+                  <span className="inline-flex items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground">
+                    ₱
+                  </span>
+                  <Input
+                    type="number"
+                    className="rounded-l-none"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Stock Quantity *</Label>
+                <Input type="number" required />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description *</Label>
+              <Textarea rows={3} required />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Product Images *</Label>
+              <Input type="file" multiple accept="image/*" required />
+              <p className="text-xs text-muted-foreground">
+                You can select multiple images
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Buffer Level</Label>
+                <Input type="number" placeholder="Default: 10" />
+              </div>
+              <div className="space-y-2">
+                <Label>Critical Level</Label>
+                <Input type="number" placeholder="Default: 5" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <RadioGroup defaultValue="active" className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="active" id="statusActive" />
+                  <Label htmlFor="statusActive">Active</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="inactive" id="statusInactive" />
+                  <Label htmlFor="statusInactive">Inactive</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </form>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddModal(false);
+                setEditingProduct(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button>{editingProduct ? "Update Product" : "Save Product"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

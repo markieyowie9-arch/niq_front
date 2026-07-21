@@ -1,6 +1,24 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const mockUser = {
+  email: "test@example.com",
+  securityQuestion: "What was your first pet's name?",
+  securityAnswer: "buddy",
+};
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1);
@@ -8,24 +26,15 @@ export default function ForgotPassword() {
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [error, setError] = useState("");
 
-  // Simulated stored data (replace with backend call)
-  const mockUser = {
-    email: "test@example.com",
-    securityQuestion: "What was your first pet's name?",
-    securityAnswer: "buddy",
-  };
-
   const handleEmailVerify = () => {
     if (!email) {
       setError("Please enter your email.");
       return;
     }
-
     if (email !== mockUser.email) {
       setError("Email not found.");
       return;
     }
-
     setError("");
     setStep(2);
   };
@@ -35,7 +44,6 @@ export default function ForgotPassword() {
       setError("Please enter your answer.");
       return;
     }
-
     if (
       securityAnswer.toLowerCase().trim() !==
       mockUser.securityAnswer.toLowerCase()
@@ -43,105 +51,81 @@ export default function ForgotPassword() {
       setError("Incorrect answer.");
       return;
     }
-
     setError("");
     setStep(3);
   };
 
   return (
-    <div className="container">
-      <div className="row justify-content-center min-vh-100 align-items-center">
-        <div className="col-md-4">
-          <div className="card shadow">
-            <div className="card-body p-5">
-              <h3 className="text-center mb-4">Reset Password</h3>
+    <div className="container mx-auto flex min-h-screen items-center justify-center px-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl">Reset Password</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-              {error && <div className="alert alert-danger">{error}</div>}
+          {step === 1 && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Enter your email to verify your identity.
+              </p>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <Button className="w-full" onClick={handleEmailVerify}>
+                Continue
+              </Button>
+            </>
+          )}
 
-              {/* STEP 1 - EMAIL */}
-              {step === 1 && (
-                <>
-                  <p className="text-muted mb-4">
-                    Enter your email to verify your identity.
-                  </p>
+          {step === 2 && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Answer your security question to proceed.
+              </p>
+              <div className="space-y-2">
+                <Label>Question</Label>
+                <Input value={mockUser.securityQuestion} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label>Answer</Label>
+                <Input
+                  value={securityAnswer}
+                  onChange={(e) => setSecurityAnswer(e.target.value)}
+                />
+              </div>
+              <Button className="w-full" onClick={handleAnswerVerify}>
+                Verify
+              </Button>
+            </>
+          )}
 
-                  <div className="mb-3">
-                    <label className="form-label">Email</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-
-                  <button
-                    className="btn btn-primary w-100"
-                    onClick={handleEmailVerify}
-                  >
-                    Continue
-                  </button>
-                </>
-              )}
-
-              {/* STEP 2 - SECURITY QUESTION */}
-              {step === 2 && (
-                <>
-                  <p className="text-muted mb-4">
-                    Answer your security question to proceed.
-                  </p>
-
-                  <div className="mb-3">
-                    <label className="form-label">Question</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={mockUser.securityQuestion}
-                      disabled
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Answer</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={securityAnswer}
-                      onChange={(e) => setSecurityAnswer(e.target.value)}
-                    />
-                  </div>
-
-                  <button
-                    className="btn btn-primary w-100"
-                    onClick={handleAnswerVerify}
-                  >
-                    Verify
-                  </button>
-                </>
-              )}
-
-              {/* STEP 3 - SUCCESS */}
-              {step === 3 && (
-                <>
-                  <p className="text-muted mb-4">
-                    Your temporary password has been sent to your email.
-                  </p>
-
-                  <div className="alert alert-success">
-                    Check your inbox for the temporary password.
-                  </div>
-
-                  <Link href="/login">
-                    <button className="btn btn-primary w-100">
-                      Return to Login
-                    </button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+          {step === 3 && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Your temporary password has been sent to your email.
+              </p>
+              <Alert variant="success">
+                <AlertDescription>
+                  Check your inbox for the temporary password.
+                </AlertDescription>
+              </Alert>
+              <Button asChild className="w-full">
+                <Link href="/login">Return to Login</Link>
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

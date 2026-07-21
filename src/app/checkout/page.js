@@ -1,12 +1,35 @@
 "use client";
+
 import { useState } from "react";
-import { useRouter } from "next/router";
-import CustomerLayout from "../../src/components/layouts/CostumerLayout";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+import CustomerLayout from "@/components/layouts/CustomerLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import dataProvider from "@/utils/dataProvider";
+
+const paymentMethods = [
+  { id: "gcash", name: "GCash", logo: "/gcash-logo.png" },
+  { id: "paymaya", name: "PayMaya", logo: "/paymaya-logo.png" },
+  { id: "bank", name: "Bank Transfer", logo: "/bank-logo.png" },
+  { id: "paypal", name: "PayPal", logo: "/paypal-logo.png" },
+];
 
 export default function Checkout() {
   const router = useRouter();
-  const [step, setStep] = useState(1); // 1=shipping, 2=payment, 3=review
+  const [step, setStep] = useState(1);
   const [shippingInfo, setShippingInfo] = useState({
     fullName: "",
     address: "",
@@ -17,6 +40,7 @@ export default function Checkout() {
     email: "",
   });
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   const handleShippingSubmit = (e) => {
     e.preventDefault();
@@ -29,7 +53,6 @@ export default function Checkout() {
   };
 
   const handlePlaceOrder = async () => {
-    // Build a minimal order payload; in real app, include cart items, totals
     const payload = {
       customer: shippingInfo.fullName || shippingInfo.email || "Guest",
       email: shippingInfo.email,
@@ -45,7 +68,6 @@ export default function Checkout() {
       await dataProvider.createOrder(payload);
       router.push("/checkout/success");
     } catch (err) {
-      // fallback: still navigate to success but log error
       console.error("Order creation failed", err);
       router.push("/checkout/success");
     }
@@ -53,297 +75,254 @@ export default function Checkout() {
 
   return (
     <CustomerLayout>
-      <div className="row justify-content-center">
-        <div className="col-md-8">
-          <h1 className="mb-4">Checkout</h1>
+      <div className="mx-auto max-w-2xl">
+        <h1 className="mb-6 text-3xl font-bold tracking-tight">Checkout</h1>
 
-          {/* Progress Steps */}
-          <div className="progress mb-4" style={{ height: "30px" }}>
-            <div
-              className="progress-bar"
-              role="progressbar"
-              style={{ width: `${(step / 3) * 100}%` }}
-            >
-              Step {step} of 3
-            </div>
+        {/* Progress */}
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+            <span>Step {step} of 3</span>
+            <span>
+              {step === 1
+                ? "Shipping"
+                : step === 2
+                  ? "Payment"
+                  : "Review"}
+            </span>
           </div>
+          <Progress value={(step / 3) * 100} className="h-2" />
+        </div>
 
-          {/* Step 1: Shipping Information */}
-          {step === 1 && (
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title mb-4">Shipping Information</h5>
-                <form onSubmit={handleShippingSubmit}>
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Full Name *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        required
-                        value={shippingInfo.fullName}
-                        onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            fullName: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Email *</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        required
-                        value={shippingInfo.email}
-                        onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            email: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Complete Address *</label>
-                    <textarea
-                      className="form-control"
-                      rows="2"
+        {/* Step 1: Shipping */}
+        {step === 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Shipping Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleShippingSubmit} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Full Name *</Label>
+                    <Input
                       required
-                      value={shippingInfo.address}
+                      value={shippingInfo.fullName}
                       onChange={(e) =>
                         setShippingInfo({
                           ...shippingInfo,
-                          address: e.target.value,
-                        })
-                      }
-                    ></textarea>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-4 mb-3">
-                      <label className="form-label">City *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        required
-                        value={shippingInfo.city}
-                        onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            city: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="col-md-4 mb-3">
-                      <label className="form-label">Province *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        required
-                        value={shippingInfo.province}
-                        onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            province: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="col-md-4 mb-3">
-                      <label className="form-label">ZIP Code *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        required
-                        value={shippingInfo.zipCode}
-                        onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            zipCode: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Contact Number *</label>
-                    <input
-                      type="tel"
-                      className="form-control"
-                      required
-                      value={shippingInfo.contact}
-                      onChange={(e) =>
-                        setShippingInfo({
-                          ...shippingInfo,
-                          contact: e.target.value,
+                          fullName: e.target.value,
                         })
                       }
                     />
                   </div>
-
-                  <div className="d-grid">
-                    <button type="submit" className="btn btn-primary">
-                      Continue to Payment
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Payment Method */}
-          {step === 2 && (
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title mb-4">Select Payment Method</h5>
-
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <div
-                      className={`card ${paymentMethod === "gcash" ? "border-primary" : ""}`}
-                      onClick={() => handlePaymentSelect("gcash")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="card-body text-center">
-                        <img src="/gcash-logo.png" alt="GCash" height="40" />
-                        <p className="mt-2 mb-0">GCash</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6">
-                    <div
-                      className={`card ${paymentMethod === "paymaya" ? "border-primary" : ""}`}
-                      onClick={() => handlePaymentSelect("paymaya")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="card-body text-center">
-                        <img
-                          src="/paymaya-logo.png"
-                          alt="PayMaya"
-                          height="40"
-                        />
-                        <p className="mt-2 mb-0">PayMaya</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6">
-                    <div
-                      className={`card ${paymentMethod === "bank" ? "border-primary" : ""}`}
-                      onClick={() => handlePaymentSelect("bank")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="card-body text-center">
-                        <img
-                          src="/bank-logo.png"
-                          alt="Bank Transfer"
-                          height="40"
-                        />
-                        <p className="mt-2 mb-0">Bank Transfer</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6">
-                    <div
-                      className={`card ${paymentMethod === "paypal" ? "border-primary" : ""}`}
-                      onClick={() => handlePaymentSelect("paypal")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="card-body text-center">
-                        <img src="/paypal-logo.png" alt="PayPal" height="40" />
-                        <p className="mt-2 mb-0">PayPal</p>
-                      </div>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Email *</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={shippingInfo.email}
+                      onChange={(e) =>
+                        setShippingInfo({
+                          ...shippingInfo,
+                          email: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                 </div>
 
-                <div className="mt-3">
-                  <button
-                    className="btn btn-outline-secondary me-2"
-                    onClick={() => setStep(1)}
-                  >
-                    Back
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Review Order */}
-          {step === 3 && (
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title mb-4">Review Your Order</h5>
-
-                {/* Order Summary */}
-                <div className="mb-4">
-                  <h6>Items</h6>
-                  {/* List cart items here */}
-                </div>
-
-                <div className="mb-4">
-                  <h6>Shipping To:</h6>
-                  <p>
-                    {shippingInfo.fullName}
-                    <br />
-                    {shippingInfo.address}
-                    <br />
-                    {shippingInfo.city}, {shippingInfo.province}{" "}
-                    {shippingInfo.zipCode}
-                    <br />
-                    Contact: {shippingInfo.contact}
-                  </p>
-                </div>
-
-                <div className="mb-4">
-                  <h6>Payment Method:</h6>
-                  <p className="text-capitalize">{paymentMethod}</p>
-                </div>
-
-                <div className="mb-4">
-                  <h6>Total Amount:</h6>
-                  <h3 className="text-primary">₱1,234.56</h3>
-                </div>
-
-                <div className="form-check mb-3">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="termsCheck"
+                <div className="space-y-2">
+                  <Label>Complete Address *</Label>
+                  <Textarea
+                    rows={2}
                     required
+                    value={shippingInfo.address}
+                    onChange={(e) =>
+                      setShippingInfo({
+                        ...shippingInfo,
+                        address: e.target.value,
+                      })
+                    }
                   />
-                  <label className="form-check-label" htmlFor="termsCheck">
-                    I agree to the{" "}
-                    <Link href="/terms">Terms and Conditions</Link>
-                  </label>
                 </div>
 
-                <div className="d-flex">
-                  <button
-                    className="btn btn-outline-secondary me-2"
-                    onClick={() => setStep(2)}
-                  >
-                    Back
-                  </button>
-                  <button
-                    className="btn btn-primary flex-grow-1"
-                    onClick={handlePlaceOrder}
-                  >
-                    Place Order
-                  </button>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label>City *</Label>
+                    <Input
+                      required
+                      value={shippingInfo.city}
+                      onChange={(e) =>
+                        setShippingInfo({
+                          ...shippingInfo,
+                          city: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Province *</Label>
+                    <Input
+                      required
+                      value={shippingInfo.province}
+                      onChange={(e) =>
+                        setShippingInfo({
+                          ...shippingInfo,
+                          province: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>ZIP Code *</Label>
+                    <Input
+                      required
+                      value={shippingInfo.zipCode}
+                      onChange={(e) =>
+                        setShippingInfo({
+                          ...shippingInfo,
+                          zipCode: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label>Contact Number *</Label>
+                  <Input
+                    type="tel"
+                    required
+                    value={shippingInfo.contact}
+                    onChange={(e) =>
+                      setShippingInfo({
+                        ...shippingInfo,
+                        contact: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <Button type="submit" className="w-full">
+                  Continue to Payment
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Payment */}
+        {step === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Select Payment Method</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                {paymentMethods.map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => handlePaymentSelect(method.id)}
+                    className={cn(
+                      "rounded-lg border-2 bg-card p-6 text-center transition-colors hover:border-primary/50",
+                      paymentMethod === method.id
+                        ? "border-primary"
+                        : "border-border",
+                    )}
+                  >
+                    <img
+                      src={method.logo}
+                      alt={method.name}
+                      className="mx-auto h-10 object-contain"
+                    />
+                    <p className="mt-2 font-medium">{method.name}</p>
+                  </button>
+                ))}
               </div>
-            </div>
-          )}
-        </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                className="mt-2"
+              >
+                Back
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 3: Review */}
+        {step === 3 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Review Your Order</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="mb-2 font-semibold">Items</h3>
+                <p className="text-sm text-muted-foreground">
+                  List cart items here
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-2 font-semibold">Shipping To:</h3>
+                <p className="text-sm text-muted-foreground">
+                  {shippingInfo.fullName}
+                  <br />
+                  {shippingInfo.address}
+                  <br />
+                  {shippingInfo.city}, {shippingInfo.province}{" "}
+                  {shippingInfo.zipCode}
+                  <br />
+                  Contact: {shippingInfo.contact}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-2 font-semibold">Payment Method:</h3>
+                <p className="text-sm capitalize text-muted-foreground">
+                  {paymentMethod}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-2 font-semibold">Total Amount:</h3>
+                <p className="text-2xl font-bold text-primary">₱1,234.56</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreed}
+                  onCheckedChange={setAgreed}
+                />
+                <Label htmlFor="terms" className="cursor-pointer">
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Terms and Conditions
+                  </Link>
+                </Label>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep(2)}>
+                  Back
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handlePlaceOrder}
+                  disabled={!agreed}
+                >
+                  Place Order
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </CustomerLayout>
   );

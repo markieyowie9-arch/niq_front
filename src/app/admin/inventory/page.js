@@ -1,10 +1,64 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { BarChart3, AlertTriangle, Search } from "lucide-react";
+
 import AdminLayout from "@/components/layouts/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import dataProvider from "@/utils/dataProvider";
+
+const stockStatus = {
+  critical: {
+    label: "Critical",
+    variant: "destructive",
+    text: "text-red-600 font-semibold",
+  },
+  low: {
+    label: "Low Stock",
+    variant: "warning",
+    text: "text-amber-600 font-semibold",
+  },
+  good: { label: "Good", variant: "success", text: "" },
+};
 
 export default function InventoryManagement() {
   const [inventory, setInventory] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -21,11 +75,6 @@ export default function InventoryManagement() {
     return () => (mounted = false);
   }, []);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // Get critical items first (requirement)
   const criticalItems = inventory.filter((item) => item.stock <= item.critical);
   const otherItems = inventory.filter((item) => item.stock > item.critical);
 
@@ -44,257 +93,235 @@ export default function InventoryManagement() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Inventory Management</h2>
-        <button
-          className="btn btn-success"
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">
+          Inventory Management
+        </h2>
+        <Button
+          variant="success"
           onClick={() => {
-            /* Generate report */
+            /* generate report */
           }}
         >
-          📊 Generate Inventory Report
-        </button>
+          <BarChart3 className="mr-2 h-4 w-4" />
+          Generate Inventory Report
+        </Button>
       </div>
 
       {/* Search */}
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <input
-            type="text"
-            className="form-control"
+      <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <div className="relative md:col-span-2">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="col-md-3">
-          <select className="form-select">
-            <option>All Status</option>
-            <option>Critical Only</option>
-            <option>Low Stock</option>
-            <option>Good Stock</option>
-          </select>
-        </div>
+        <Select>
+          <SelectTrigger>
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="critical">Critical Only</SelectItem>
+            <SelectItem value="low">Low Stock</SelectItem>
+            <SelectItem value="good">Good Stock</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Critical Stock Section (Prioritized) */}
+      {/* Critical Stock Section */}
       {filteredCritical.length > 0 && (
-        <div className="mb-4">
-          <h4 className="text-danger mb-3">
-            ⚠️ Critical Stock - Immediate Action Needed
-          </h4>
-          <div className="card border-danger">
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table">
-                  <thead className="table-danger">
-                    <tr>
-                      <th>Product</th>
-                      <th>Current Stock</th>
-                      <th>Critical Level</th>
-                      <th>Buffer Level</th>
-                      <th>ML Suggestion</th>
-                      <th>Last Updated</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCritical.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.product}</td>
-                        <td className="fw-bold text-danger">{item.stock}</td>
-                        <td>{item.critical}</td>
-                        <td>{item.buffer}</td>
-                        <td>
-                          <span className="badge bg-info">
-                            {item.mlSuggestion}
-                          </span>
-                          <button className="btn btn-sm btn-link">Apply</button>
-                        </td>
-                        <td>{item.lastUpdated}</td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-primary"
-                            onClick={() => {
-                              setSelectedProduct(item);
-                              setShowEditModal(true);
-                            }}
-                          >
-                            Update Stock
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        <div className="mb-6">
+          <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-red-600">
+            <AlertTriangle className="h-5 w-5" />
+            Critical Stock — Immediate Action Needed
+          </h3>
+          <Card className="border-red-200">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-red-50">
+                    <TableHead>Product</TableHead>
+                    <TableHead>Current Stock</TableHead>
+                    <TableHead>Critical Level</TableHead>
+                    <TableHead>Buffer Level</TableHead>
+                    <TableHead>ML Suggestion</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCritical.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.product}</TableCell>
+                      <TableCell className="font-bold text-red-600">
+                        {item.stock}
+                      </TableCell>
+                      <TableCell>{item.critical}</TableCell>
+                      <TableCell>{item.buffer}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="info">{item.mlSuggestion}</Badge>
+                          <Button variant="link" size="sm" className="h-auto p-0">
+                            Apply
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.lastUpdated}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProduct(item);
+                            setShowEditModal(true);
+                          }}
+                        >
+                          Update Stock
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* All Inventory */}
       <div>
-        <h4 className="mb-3">All Inventory</h4>
-        <div className="card">
-          <div className="card-body">
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Current Stock</th>
-                    <th>Buffer Level</th>
-                    <th>Critical Level</th>
-                    <th>Status</th>
-                    <th>ML Suggestion</th>
-                    <th>Last Updated</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOther.map((item) => {
-                    const status = getStockStatus(item);
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.product}</td>
-                        <td
-                          className={
-                            status === "critical"
-                              ? "text-danger fw-bold"
-                              : status === "low"
-                                ? "text-warning fw-bold"
-                                : ""
-                          }
+        <h3 className="mb-3 text-lg font-semibold">All Inventory</h3>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Current Stock</TableHead>
+                  <TableHead>Buffer Level</TableHead>
+                  <TableHead>Critical Level</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>ML Suggestion</TableHead>
+                  <TableHead>Last Updated</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOther.map((item) => {
+                  const status = getStockStatus(item);
+                  const s = stockStatus[status];
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.product}</TableCell>
+                      <TableCell className={s.text}>{item.stock}</TableCell>
+                      <TableCell>{item.buffer}</TableCell>
+                      <TableCell>{item.critical}</TableCell>
+                      <TableCell>
+                        <Badge variant={s.variant}>{s.label}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="info">{item.mlSuggestion}</Badge>
+                          <Button variant="link" size="sm" className="h-auto p-0">
+                            Apply
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.lastUpdated}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProduct(item);
+                            setShowEditModal(true);
+                          }}
                         >
-                          {item.stock}
-                        </td>
-                        <td>{item.buffer}</td>
-                        <td>{item.critical}</td>
-                        <td>
-                          <span
-                            className={`badge bg-${
-                              status === "critical"
-                                ? "danger"
-                                : status === "low"
-                                  ? "warning"
-                                  : "success"
-                            }`}
-                          >
-                            {status === "critical"
-                              ? "Critical"
-                              : status === "low"
-                                ? "Low Stock"
-                                : "Good"}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="badge bg-info">
-                            {item.mlSuggestion}
-                          </span>
-                          <button className="btn btn-sm btn-link">Apply</button>
-                        </td>
-                        <td>{item.lastUpdated}</td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-primary"
-                            onClick={() => {
-                              setSelectedProduct(item);
-                              setShowEditModal(true);
-                            }}
-                          >
-                            Update Stock
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+                          Update Stock
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Update Stock Modal */}
-      {showEditModal && selectedProduct && (
-        <div className="modal show d-block" tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  Update Stock - {selectedProduct.product}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedProduct(null);
-                  }}
-                ></button>
+      <Dialog
+        open={showEditModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowEditModal(false);
+            setSelectedProduct(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Update Stock — {selectedProduct?.product}
+            </DialogTitle>
+            <DialogDescription>
+              Adjust stock levels and reorder thresholds for this product.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedProduct && (
+            <form className="space-y-4">
+              <div className="space-y-2">
+                <Label>Current Stock</Label>
+                <Input
+                  type="number"
+                  defaultValue={selectedProduct.stock}
+                />
               </div>
-              <div className="modal-body">
-                <form>
-                  <div className="mb-3">
-                    <label className="form-label">Current Stock</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      defaultValue={selectedProduct.stock}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Buffer Level</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      defaultValue={selectedProduct.buffer}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Critical Level</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      defaultValue={selectedProduct.critical}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">ML Suggested Threshold</label>
-                    <div className="input-group">
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={selectedProduct.mlSuggestion}
-                        readOnly
-                      />
-                      <button className="btn btn-outline-primary" type="button">
-                        Apply ML Suggestion
-                      </button>
-                    </div>
-                  </div>
-                </form>
+              <div className="space-y-2">
+                <Label>Buffer Level</Label>
+                <Input
+                  type="number"
+                  defaultValue={selectedProduct.buffer}
+                />
               </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedProduct(null);
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="button" className="btn btn-primary">
-                  Update Stock
-                </button>
+              <div className="space-y-2">
+                <Label>Critical Level</Label>
+                <Input
+                  type="number"
+                  defaultValue={selectedProduct.critical}
+                />
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="space-y-2">
+                <Label>ML Suggested Threshold</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={selectedProduct.mlSuggestion}
+                    readOnly
+                  />
+                  <Button variant="outline" type="button">
+                    Apply ML Suggestion
+                  </Button>
+                </div>
+              </div>
+            </form>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedProduct(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button>Update Stock</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

@@ -1,10 +1,67 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { Plus, Pencil, Power } from "lucide-react";
+
 import AdminLayout from "@/components/layouts/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import dataProvider from "@/utils/dataProvider";
+
+const modules = [
+  { id: "products", name: "Product Management" },
+  { id: "inventory", name: "Inventory Management" },
+  { id: "orders", name: "Order Management" },
+  { id: "reports", name: "Reports" },
+  { id: "employees", name: "Employee Management" },
+  { id: "audit", name: "Audit Trail" },
+];
 
 export default function EmployeeManagement() {
   const [employees, setEmployees] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [permissions, setPermissions] = useState({
+    products: true,
+    inventory: true,
+    orders: true,
+    reports: false,
+    employees: false,
+    audit: false,
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -21,221 +78,205 @@ export default function EmployeeManagement() {
     return () => (mounted = false);
   }, []);
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [permissions, setPermissions] = useState({
-    products: true,
-    inventory: true,
-    orders: true,
-    reports: false,
-    employees: false,
-    audit: false,
-  });
-
-  const modules = [
-    { id: "products", name: "Product Management" },
-    { id: "inventory", name: "Inventory Management" },
-    { id: "orders", name: "Order Management" },
-    { id: "reports", name: "Reports" },
-    { id: "employees", name: "Employee Management" },
-    { id: "audit", name: "Audit Trail" },
-  ];
-
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Employee Management</h2>
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowAddModal(true)}
-        >
-          + Add Employee
-        </button>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">
+          Employee Management
+        </h2>
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Employee
+        </Button>
       </div>
 
-      {/* Employees Table */}
-      <div className="card">
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Last Login</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {employees.map((emp) => (
-                  <tr key={emp.id}>
-                    <td>{emp.id}</td>
-                    <td>{emp.name}</td>
-                    <td>{emp.email}</td>
-                    <td>
-                      <span
-                        className={`badge bg-${emp.role === "Admin" ? "danger" : "info"}`}
-                      >
-                        {emp.role}
-                      </span>
-                    </td>
-                    <td>{emp.lastLogin}</td>
-                    <td>
-                      <span
-                        className={`badge bg-${emp.status === "Active" ? "success" : "secondary"}`}
-                      >
-                        {emp.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-sm btn-outline-primary me-2"
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Last Login</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {employees.map((emp) => (
+                <TableRow key={emp.id}>
+                  <TableCell>{emp.id}</TableCell>
+                  <TableCell>{emp.name}</TableCell>
+                  <TableCell>{emp.email}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={emp.role === "Admin" ? "destructive" : "info"}
+                    >
+                      {emp.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{emp.lastLogin}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={emp.status === "Active" ? "success" : "secondary"}
+                    >
+                      {emp.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setEditingEmployee(emp)}
                       >
+                        <Pencil className="mr-1 h-3 w-3" />
                         Edit
-                      </button>
-                      <button className="btn btn-sm btn-outline-danger">
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Power className="mr-1 h-3 w-3" />
                         Deactivate
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Employee Modal */}
-      {(showAddModal || editingEmployee) && (
-        <div className="modal show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingEmployee ? "Edit Employee" : "Add New Employee"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingEmployee(null);
-                  }}
-                ></button>
+      <Dialog
+        open={showAddModal || !!editingEmployee}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddModal(false);
+            setEditingEmployee(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingEmployee ? "Edit Employee" : "Add New Employee"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingEmployee
+                ? "Update employee information and permissions."
+                : "Create a new employee account and assign module permissions."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Full Name</Label>
+                <Input defaultValue={editingEmployee?.name} />
               </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Full Name</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        defaultValue={editingEmployee?.name}
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Email</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        defaultValue={editingEmployee?.email}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Contact Number</label>
-                      <input type="tel" className="form-control" />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Role</label>
-                      <select
-                        className="form-select"
-                        defaultValue={editingEmployee?.role || "Employee"}
-                      >
-                        <option value="Admin">Admin</option>
-                        <option value="Employee">Employee</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {!editingEmployee && (
-                    <div className="row">
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Password</label>
-                        <input type="password" className="form-control" />
-                      </div>
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Confirm Password</label>
-                        <input type="password" className="form-control" />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mb-3">
-                    <label className="form-label">Security Question</label>
-                    <select className="form-select">
-                      <option>What was your first pet's name?</option>
-                      <option>What was your elementary school?</option>
-                      <option>What is your mother's maiden name?</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Security Answer</label>
-                    <input type="text" className="form-control" />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Module Permissions</label>
-                    <div className="row">
-                      {modules.map((module) => (
-                        <div className="col-md-4 mb-2" key={module.id}>
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`perm_${module.id}`}
-                              defaultChecked={permissions[module.id]}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={`perm_${module.id}`}
-                            >
-                              {module.name}
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingEmployee(null);
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="button" className="btn btn-primary">
-                  {editingEmployee ? "Update Employee" : "Add Employee"}
-                </button>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  defaultValue={editingEmployee?.email}
+                />
               </div>
             </div>
-          </div>
-        </div>
-      )}
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Contact Number</Label>
+                <Input type="tel" />
+              </div>
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <Select defaultValue={editingEmployee?.role || "Employee"}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectItem value="Employee">Employee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {!editingEmployee && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <Input type="password" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirm Password</Label>
+                  <Input type="password" />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Security Question</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a question" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pet">
+                    What was your first pet's name?
+                  </SelectItem>
+                  <SelectItem value="school">
+                    What was your elementary school?
+                  </SelectItem>
+                  <SelectItem value="mother">
+                    What is your mother's maiden name?
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Security Answer</Label>
+              <Input />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Module Permissions</Label>
+              <div className="grid gap-2 rounded-md border p-4 md:grid-cols-3">
+                {modules.map((module) => (
+                  <label
+                    key={module.id}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <Checkbox
+                      id={`perm_${module.id}`}
+                      defaultChecked={permissions[module.id]}
+                    />
+                    <span>{module.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </form>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddModal(false);
+                setEditingEmployee(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button>
+              {editingEmployee ? "Update Employee" : "Add Employee"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

@@ -3,13 +3,19 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import CustomerLayout from "@/components/layouts/CostumerLayout";
+import { Minus, Plus, ChevronRight } from "lucide-react";
+
+import CustomerLayout from "@/components/layouts/CustomerLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProductDetail() {
   const params = useParams();
-  const id = params?.id; // get dynamic route param
+  const id = params?.id;
 
   const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(0);
 
   const [product] = useState({
     id: id,
@@ -28,123 +34,131 @@ export default function ProductDetail() {
 
   return (
     <CustomerLayout>
-      <div className="row">
-        {/* Breadcrumb */}
-        <div className="col-12 mb-4">
-          <nav aria-label="breadcrumb">
-            <ol className="breadcrumb">
-              <li className="breadcrumb-item">
-                <Link href="/store">Store</Link>
-              </li>
-              <li className="breadcrumb-item">
-                <Link href={`/store?category=${product.category}`}>
-                  {product.category}
-                </Link>
-              </li>
-              <li className="breadcrumb-item active">{product.name}</li>
-            </ol>
-          </nav>
-        </div>
+      {/* Breadcrumb */}
+      <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
+        <Link
+          href="/store"
+          className="transition-colors hover:text-foreground"
+        >
+          Store
+        </Link>
+        <ChevronRight className="h-3 w-3" />
+        <Link
+          href={`/store?category=${product.category}`}
+          className="transition-colors hover:text-foreground"
+        >
+          {product.category}
+        </Link>
+        <ChevronRight className="h-3 w-3" />
+        <span className="font-medium text-foreground">{product.name}</span>
+      </nav>
 
+      <div className="grid gap-8 md:grid-cols-2">
         {/* Product Images */}
-        <div className="col-md-6">
-          <div
-            id="productCarousel"
-            className="carousel slide"
-            data-bs-ride="carousel"
-          >
-            <div className="carousel-inner">
+        <div>
+          <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+            <img
+              src={product.images[activeImage]}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+          {product.images.length > 1 && (
+            <div className="mt-3 flex gap-2">
               {product.images.map((img, index) => (
-                <div
-                  className={`carousel-item ${index === 0 ? "active" : ""}`}
+                <button
                   key={index}
+                  onClick={() => setActiveImage(index)}
+                  className={`h-16 w-16 overflow-hidden rounded border-2 transition-colors ${
+                    activeImage === index
+                      ? "border-primary"
+                      : "border-transparent"
+                  }`}
                 >
                   <img
                     src={img}
-                    className="d-block w-100"
-                    alt={product.name}
-                    style={{ height: "400px", objectFit: "cover" }}
+                    alt={`${product.name} ${index + 1}`}
+                    className="h-full w-full object-cover"
                   />
-                </div>
+                </button>
               ))}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Product Info */}
-        <div className="col-md-6">
-          <h1 className="mb-3">{product.name}</h1>
+        <div>
+          <h1 className="mb-3 text-3xl font-bold tracking-tight">
+            {product.name}
+          </h1>
 
-          <div className="mb-3">
-            <span className="h2 text-primary">₱{product.price}</span>
+          <div className="mb-4">
+            <span className="text-2xl font-bold text-primary">
+              ₱{product.price}
+            </span>
           </div>
 
-          <div className="mb-3">
+          <div className="mb-6 flex items-center gap-2">
             {product.stock > 0 ? (
               <>
-                <span className="badge bg-success me-2">In Stock</span>
-                <span className="text-muted">
+                <Badge variant="success">In Stock</Badge>
+                <span className="text-sm text-muted-foreground">
                   {product.stock} units available
                 </span>
               </>
             ) : (
-              <span className="badge bg-secondary">Out of Stock</span>
+              <Badge variant="secondary">Out of Stock</Badge>
             )}
           </div>
 
-          <div className="mb-4">
-            <h5>Description</h5>
-            <p className="text-muted">{product.description}</p>
+          <div className="mb-6">
+            <h5 className="mb-2 font-semibold">Description</h5>
+            <p className="text-muted-foreground">{product.description}</p>
           </div>
 
           {product.stock > 0 && (
             <>
-              <div className="row mb-4">
-                <div className="col-md-4">
-                  <label className="form-label">Quantity</label>
-                  <div className="input-group">
-                    <button
-                      className="btn btn-outline-secondary"
-                      type="button"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    >
-                      -
-                    </button>
-
-                    <input
-                      type="number"
-                      className="form-control text-center"
-                      value={quantity}
-                      min="1"
-                      max={product.stock}
-                      onChange={(e) =>
-                        setQuantity(parseInt(e.target.value) || 1)
-                      }
-                    />
-
-                    <button
-                      className="btn btn-outline-secondary"
-                      type="button"
-                      onClick={() =>
-                        setQuantity(Math.min(product.stock, quantity + 1))
-                      }
-                    >
-                      +
-                    </button>
-                  </div>
+              <div className="mb-4 max-w-xs">
+                <label className="mb-2 block text-sm font-medium">
+                  Quantity
+                </label>
+                <div className="flex items-center">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <Input
+                    type="number"
+                    className="h-10 w-16 rounded-none border-x-0 text-center"
+                    value={quantity}
+                    min={1}
+                    max={product.stock}
+                    onChange={(e) =>
+                      setQuantity(parseInt(e.target.value) || 1)
+                    }
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      setQuantity(Math.min(product.stock, quantity + 1))
+                    }
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
 
-              <div className="d-grid gap-2">
-                <button
-                  className="btn btn-primary btn-lg"
-                  onClick={handleAddToCart}
-                >
+              <div className="grid gap-2">
+                <Button size="lg" onClick={handleAddToCart}>
                   Add to Cart
-                </button>
-                <button className="btn btn-outline-primary btn-lg">
+                </Button>
+                <Button size="lg" variant="outline">
                   Buy Now
-                </button>
+                </Button>
               </div>
             </>
           )}

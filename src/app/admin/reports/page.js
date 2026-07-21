@@ -1,7 +1,51 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { Printer, DollarSign, Receipt, X, Package, Users, TrendingUp, BarChart3 as BarIcon } from "lucide-react";
+
 import AdminLayout from "@/components/layouts/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import dataProvider from "@/utils/dataProvider";
+
+const reportTypes = [
+  { id: "sales", name: "Sales Report", icon: DollarSign },
+  { id: "transactions", name: "Transaction History", icon: Receipt },
+  { id: "cancelled", name: "Cancelled Orders", icon: X },
+  { id: "inventory", name: "Inventory Status", icon: Package },
+  { id: "customers", name: "Customer Analytics", icon: Users },
+];
+
+const dateRanges = [
+  { id: "week", name: "This Week" },
+  { id: "month", name: "This Month" },
+  { id: "year", name: "This Year" },
+  { id: "custom", name: "Custom Range" },
+];
 
 export default function Reports() {
   const [reportType, setReportType] = useState("sales");
@@ -9,327 +53,348 @@ export default function Reports() {
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 
-  const reportTypes = [
-    { id: "sales", name: "Sales Report", icon: "💰" },
-    { id: "transactions", name: "Transaction History", icon: "📋" },
-    { id: "cancelled", name: "Cancelled Orders", icon: "❌" },
-    { id: "inventory", name: "Inventory Status", icon: "📦" },
-    { id: "customers", name: "Customer Analytics", icon: "👥" },
-  ];
-
-  const dateRanges = [
-    { id: "week", name: "This Week" },
-    { id: "month", name: "This Month" },
-    { id: "year", name: "This Year" },
-    { id: "custom", name: "Custom Range" },
-  ];
-
   useEffect(() => {
     let mounted = true;
     async function load() {
       try {
-        // preload data for reports when backend enabled
         await Promise.all([
           dataProvider.getOrders(),
           dataProvider.getProducts(),
           dataProvider.getInventory(),
         ]);
       } catch (err) {
-        // ignore — fallback UI remains
+        /* ignore */
       }
     }
     load();
     return () => (mounted = false);
   }, []);
 
+  const currentReport = reportTypes.find((t) => t.id === reportType);
+  const Icon = currentReport?.icon;
+  const rangeLabel =
+    dateRange === "week"
+      ? "This Week"
+      : dateRange === "month"
+        ? "This Month"
+        : dateRange === "year"
+          ? "This Year"
+          : "Custom Range";
+
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Reports & Analytics</h2>
-        <button className="btn btn-primary" onClick={() => window.print()}>
-          🖨️ Print Report
-        </button>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">
+          Reports & Analytics
+        </h2>
+        <Button onClick={() => window.print()}>
+          <Printer className="mr-2 h-4 w-4" />
+          Print Report
+        </Button>
       </div>
 
       {/* Report Controls */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-4">
-              <label className="form-label">Report Type</label>
-              <select
-                className="form-select"
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
-              >
-                {reportTypes.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.icon} {type.name}
-                  </option>
-                ))}
-              </select>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base">Report Configuration</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-2">
+              <Label>Report Type</Label>
+              <Select value={reportType} onValueChange={setReportType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {reportTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="col-md-3">
-              <label className="form-label">Date Range</label>
-              <select
-                className="form-select"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-              >
-                {dateRanges.map((range) => (
-                  <option key={range.id} value={range.id}>
-                    {range.name}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-2">
+              <Label>Date Range</Label>
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {dateRanges.map((range) => (
+                    <SelectItem key={range.id} value={range.id}>
+                      {range.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {dateRange === "custom" && (
               <>
-                <div className="col-md-2">
-                  <label className="form-label">Start Date</label>
-                  <input
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Input
                     type="date"
-                    className="form-control"
                     value={customStart}
                     onChange={(e) => setCustomStart(e.target.value)}
                   />
                 </div>
-                <div className="col-md-2">
-                  <label className="form-label">End Date</label>
-                  <input
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Input
                     type="date"
-                    className="form-control"
                     value={customEnd}
                     onChange={(e) => setCustomEnd(e.target.value)}
                   />
                 </div>
               </>
             )}
-            <div className="col-md-{dateRange === 'custom' ? 1 : 5} d-flex align-items-end">
-              <button className="btn btn-primary w-100">Generate Report</button>
-            </div>
+            {dateRange !== "custom" && (
+              <div className="flex items-end md:col-span-2">
+                <Button className="w-full">Generate Report</Button>
+              </div>
+            )}
+            {dateRange === "custom" && (
+              <div className="flex items-end md:col-span-2">
+                <Button className="w-full">Generate Report</Button>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Report Content */}
-      <div className="card">
-        <div className="card-header">
-          <h5 className="mb-0">
-            {reportTypes.find((t) => t.id === reportType)?.icon}{" "}
-            {reportTypes.find((t) => t.id === reportType)?.name} -
-            {dateRange === "week"
-              ? " This Week"
-              : dateRange === "month"
-                ? " This Month"
-                : dateRange === "year"
-                  ? " This Year"
-                  : " Custom Range"}
-          </h5>
-        </div>
-        <div className="card-body">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            {Icon && <Icon className="h-5 w-5" />}
+            {currentReport?.name} — {rangeLabel}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           {reportType === "sales" && (
             <>
               {/* Summary Cards */}
-              <div className="row g-3 mb-4">
-                <div className="col-md-3">
-                  <div className="card bg-success text-white">
-                    <div className="card-body">
-                      <h6>Total Sales</h6>
-                      <h3>₱45,678</h3>
-                      <small>+12% from last month</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-info text-white">
-                    <div className="card-body">
-                      <h6>Total Orders</h6>
-                      <h3>156</h3>
-                      <small>+8% from last month</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-warning">
-                    <div className="card-body">
-                      <h6>Average Order Value</h6>
-                      <h3>₱293</h3>
-                      <small>+3% from last month</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-primary text-white">
-                    <div className="card-body">
-                      <h6>Top Product</h6>
-                      <h6>Laundry Detergent</h6>
-                      <small>45 units sold</small>
-                    </div>
-                  </div>
+              <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Card className="border-emerald-200 bg-emerald-600 text-white">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-emerald-100">
+                      Total Sales
+                    </CardDescription>
+                    <CardTitle className="text-2xl text-white">
+                      ₱45,678
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-emerald-100">
+                      +12% from last month
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="border-sky-200 bg-sky-600 text-white">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-sky-100">
+                      Total Orders
+                    </CardDescription>
+                    <CardTitle className="text-2xl text-white">156</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-sky-100">
+                      +8% from last month
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="border-amber-200 bg-amber-500 text-white">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-amber-50">
+                      Average Order Value
+                    </CardDescription>
+                    <CardTitle className="text-2xl text-white">₱293</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-amber-50">
+                      +3% from last month
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="border-blue-200 bg-blue-600 text-white">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-blue-100">
+                      Top Product
+                    </CardDescription>
+                    <CardTitle className="text-base text-white">
+                      Laundry Detergent
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-blue-100">45 units sold</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="mb-6 flex h-72 items-center justify-center rounded-lg border bg-muted/40">
+                <div className="text-center">
+                  <BarIcon className="mx-auto h-10 w-10 text-muted-foreground" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Sales Chart Visualization
+                  </p>
                 </div>
               </div>
 
-              {/* Chart placeholder */}
-              <div className="bg-light p-5 text-center mb-4">
-                <p className="text-muted">Sales Chart Visualization</p>
-                <div style={{ height: "300px", background: "#f8f9fa" }}>
-                  {/* Add chart library here */}
-                </div>
-              </div>
-
-              {/* Sales Table */}
-              <h6 className="mb-3">Daily Sales Breakdown</h6>
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Orders</th>
-                    <th>Products Sold</th>
-                    <th>Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>2024-02-20</td>
-                    <td>12</td>
-                    <td>28</td>
-                    <td>₱3,450</td>
-                  </tr>
-                  <tr>
-                    <td>2024-02-19</td>
-                    <td>15</td>
-                    <td>34</td>
-                    <td>₱4,230</td>
-                  </tr>
-                  <tr>
-                    <td>2024-02-18</td>
-                    <td>8</td>
-                    <td>19</td>
-                    <td>₱2,180</td>
-                  </tr>
-                </tbody>
-              </table>
+              <h3 className="mb-3 font-semibold">Daily Sales Breakdown</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Orders</TableHead>
+                    <TableHead>Products Sold</TableHead>
+                    <TableHead>Revenue</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>2024-02-20</TableCell>
+                    <TableCell>12</TableCell>
+                    <TableCell>28</TableCell>
+                    <TableCell>₱3,450</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>2024-02-19</TableCell>
+                    <TableCell>15</TableCell>
+                    <TableCell>34</TableCell>
+                    <TableCell>₱4,230</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>2024-02-18</TableCell>
+                    <TableCell>8</TableCell>
+                    <TableCell>19</TableCell>
+                    <TableCell>₱2,180</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </>
           )}
 
           {reportType === "inventory" && (
             <>
-              <div className="row mb-4">
-                <div className="col-md-6">
-                  <div className="card border-danger">
-                    <div className="card-body">
-                      <h6 className="text-danger">Critical Stock</h6>
-                      <h3>3 items</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="card border-warning">
-                    <div className="card-body">
-                      <h6 className="text-warning">Low Stock</h6>
-                      <h3>8 items</h3>
-                    </div>
-                  </div>
-                </div>
+              <div className="mb-6 grid gap-4 md:grid-cols-2">
+                <Card className="border-red-200">
+                  <CardHeader>
+                    <CardDescription className="text-red-600">
+                      Critical Stock
+                    </CardDescription>
+                    <CardTitle className="text-2xl">3 items</CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card className="border-amber-200">
+                  <CardHeader>
+                    <CardDescription className="text-amber-600">
+                      Low Stock
+                    </CardDescription>
+                    <CardTitle className="text-2xl">8 items</CardTitle>
+                  </CardHeader>
+                </Card>
               </div>
-
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Current Stock</th>
-                    <th>Buffer Level</th>
-                    <th>Critical Level</th>
-                    <th>Status</th>
-                    <th>Last Restocked</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Dishwashing Liquid</td>
-                    <td className="text-danger fw-bold">2</td>
-                    <td>15</td>
-                    <td>8</td>
-                    <td>
-                      <span className="badge bg-danger">Critical</span>
-                    </td>
-                    <td>2024-02-15</td>
-                  </tr>
-                  <tr>
-                    <td>Car Shampoo</td>
-                    <td className="text-warning fw-bold">8</td>
-                    <td>15</td>
-                    <td>8</td>
-                    <td>
-                      <span className="badge bg-warning">Low Stock</span>
-                    </td>
-                    <td>2024-02-10</td>
-                  </tr>
-                </tbody>
-              </table>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Current Stock</TableHead>
+                    <TableHead>Buffer Level</TableHead>
+                    <TableHead>Critical Level</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Restocked</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Dishwashing Liquid</TableCell>
+                    <TableCell className="font-bold text-red-600">2</TableCell>
+                    <TableCell>15</TableCell>
+                    <TableCell>8</TableCell>
+                    <TableCell>
+                      <Badge variant="destructive">Critical</Badge>
+                    </TableCell>
+                    <TableCell>2024-02-15</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Car Shampoo</TableCell>
+                    <TableCell className="font-bold text-amber-600">8</TableCell>
+                    <TableCell>15</TableCell>
+                    <TableCell>8</TableCell>
+                    <TableCell>
+                      <Badge variant="warning">Low Stock</Badge>
+                    </TableCell>
+                    <TableCell>2024-02-10</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </>
           )}
 
           {reportType === "customers" && (
             <>
-              <div className="row mb-4">
-                <div className="col-md-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h6>Total Customers</h6>
-                      <h3>89</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h6>New Customers</h6>
-                      <h3>12</h3>
-                      <small>This month</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h6>Repeat Customers</h6>
-                      <h3>45%</h3>
-                    </div>
-                  </div>
-                </div>
+              <div className="mb-6 grid gap-4 md:grid-cols-3">
+                <Card>
+                  <CardHeader>
+                    <CardDescription>Total Customers</CardDescription>
+                    <CardTitle className="text-2xl">89</CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardDescription>New Customers</CardDescription>
+                    <CardTitle className="text-2xl">12</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-muted-foreground">This month</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardDescription>Repeat Customers</CardDescription>
+                    <CardTitle className="text-2xl">45%</CardTitle>
+                  </CardHeader>
+                </Card>
               </div>
-
-              <h6 className="mb-3">Top Customers</h6>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Customer</th>
-                    <th>Orders</th>
-                    <th>Total Spent</th>
-                    <th>Last Order</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>John Doe</td>
-                    <td>8</td>
-                    <td>₱5,240</td>
-                    <td>2024-02-20</td>
-                  </tr>
-                  <tr>
-                    <td>Jane Smith</td>
-                    <td>5</td>
-                    <td>₱3,890</td>
-                    <td>2024-02-19</td>
-                  </tr>
-                </tbody>
-              </table>
+              <h3 className="mb-3 font-semibold">Top Customers</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Orders</TableHead>
+                    <TableHead>Total Spent</TableHead>
+                    <TableHead>Last Order</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>John Doe</TableCell>
+                    <TableCell>8</TableCell>
+                    <TableCell>₱5,240</TableCell>
+                    <TableCell>2024-02-20</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Jane Smith</TableCell>
+                    <TableCell>5</TableCell>
+                    <TableCell>₱3,890</TableCell>
+                    <TableCell>2024-02-19</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </>
           )}
-        </div>
-      </div>
+
+          {(reportType === "transactions" || reportType === "cancelled") && (
+            <div className="flex h-72 items-center justify-center rounded-lg border bg-muted/40">
+              <p className="text-sm text-muted-foreground">
+                {currentReport?.name} report content
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </AdminLayout>
   );
 }

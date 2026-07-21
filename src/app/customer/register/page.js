@@ -1,6 +1,26 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function CustomerRegister() {
   const [formData, setFormData] = useState({
@@ -17,10 +37,7 @@ export default function CustomerRegister() {
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
@@ -36,134 +53,137 @@ export default function CustomerRegister() {
   };
 
   return (
-    <div className="container">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card shadow">
-            <div className="card-body p-5">
-              <h3 className="text-center mb-4">Customer Registration</h3>
+    <div className="container mx-auto flex justify-center px-4 py-12">
+      <Card className="w-full max-w-xl shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl">
+            Customer Registration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-              {error && <div className="alert alert-danger">{error}</div>}
-
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label className="form-label">Full Name *</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    className="form-control"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    className="form-control"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Contact Number *</label>
-                  <input
-                    type="tel"
-                    name="contact"
-                    className="form-control"
-                    value={formData.contact}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Complete Address *</label>
-                  <textarea
-                    name="address"
-                    className="form-control"
-                    rows="2"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-
-                {/* Security Question */}
-                <div className="mb-3">
-                  <label className="form-label">Security Question *</label>
-                  <select
-                    name="securityQuestion"
-                    className="form-select"
-                    value={formData.securityQuestion}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select a question</option>
-                    <option value="pet">What was your first pet's name?</option>
-                    <option value="school">
-                      What was your elementary school?
-                    </option>
-                    <option value="mother">
-                      What is your mother's maiden name?
-                    </option>
-                  </select>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Answer *</label>
-                  <input
-                    type="text"
-                    name="securityAnswer"
-                    className="form-control"
-                    value={formData.securityAnswer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Password *</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="form-control"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Confirm Password *</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    className="form-control"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-primary w-100">
-                  Register
-                </button>
-
-                <p className="text-center mt-3">
-                  Already have an account?{" "}
-                  <Link href="/customer/login">Login here</Link>
-                </p>
-              </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Full Name *</Label>
+              <Input
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                required
+              />
             </div>
-          </div>
-        </div>
-      </div>
+
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Contact Number *</Label>
+              <Input
+                type="tel"
+                name="contact"
+                value={formData.contact}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Complete Address *</Label>
+              <Textarea
+                name="address"
+                rows={2}
+                value={formData.address}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Security Question *</Label>
+              <Select
+                value={formData.securityQuestion}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, securityQuestion: v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a question" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pet">
+                    What was your first pet's name?
+                  </SelectItem>
+                  <SelectItem value="school">
+                    What was your elementary school?
+                  </SelectItem>
+                  <SelectItem value="mother">
+                    What is your mother's maiden name?
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Answer *</Label>
+              <Input
+                name="securityAnswer"
+                value={formData.securityAnswer}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Password *</Label>
+              <Input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Confirm Password *</Label>
+              <Input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <Button type="submit" className="w-full">
+              Register
+            </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/customer/login"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Login here
+              </Link>
+            </p>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

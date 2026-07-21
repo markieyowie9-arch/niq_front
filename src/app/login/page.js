@@ -5,6 +5,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthProvider";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
 const DEV_MODE = true;
 
 export default function Login() {
@@ -31,50 +42,54 @@ export default function Login() {
   };
 
   return (
-    <div className="container">
-      <div className="row justify-content-center min-vh-100 align-items-center">
-        <div className="col-md-4">
-          <div className="card shadow">
-            <div className="card-body p-5">
-              <h3 className="text-center mb-4">Admin Login</h3>
+    <div className="container mx-auto flex min-h-screen items-center justify-center px-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl">Admin Login</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-              {error && <div className="alert alert-danger">{error}</div>}
-
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label className="form-label">Email</label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-primary w-100 mb-3">
-                  Login
-                </button>
-
-                <div className="text-center">
-                  <Link href="/forgot-password">Forgot Password?</Link>
-                </div>
-              </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-          </div>
-        </div>
-      </div>
+
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+
+            <div className="text-center text-sm">
+              <Link
+                href="/forgot-password"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

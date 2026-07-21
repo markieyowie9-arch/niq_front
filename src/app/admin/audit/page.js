@@ -1,7 +1,42 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { Download, Search } from "lucide-react";
+
 import AdminLayout from "@/components/layouts/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import dataProvider from "@/utils/dataProvider";
+
+const actionVariant = (action) => {
+  if (action === "Login") return "success";
+  if (action && action.includes("Update")) return "warning";
+  if (action === "Cancel Order") return "danger";
+  return "secondary";
+};
 
 export default function AuditTrail() {
   const [logs, setLogs] = useState([]);
@@ -29,156 +64,139 @@ export default function AuditTrail() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Audit Trail</h2>
-        <button
-          className="btn btn-outline-primary"
-          onClick={() => window.print()}
-        >
-          📥 Export Logs
-        </button>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">Audit Trail</h2>
+        <Button variant="outline" onClick={() => window.print()}>
+          <Download className="mr-2 h-4 w-4" />
+          Export Logs
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-3">
-              <label className="form-label">User</label>
-              <select
-                className="form-select"
-                value={filterUser}
-                onChange={(e) => setFilterUser(e.target.value)}
-              >
-                {users.map((user) => (
-                  <option key={user} value={user}>
-                    {user === "all" ? "All Users" : user}
-                  </option>
-                ))}
-              </select>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-2">
+              <Label>User</Label>
+              <Select value={filterUser} onValueChange={setFilterUser}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user} value={user}>
+                      {user === "all" ? "All Users" : user}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="col-md-3">
-              <label className="form-label">Action</label>
-              <select
-                className="form-select"
-                value={filterAction}
-                onChange={(e) => setFilterAction(e.target.value)}
-              >
-                {actions.map((action) => (
-                  <option key={action} value={action}>
-                    {action === "all" ? "All Actions" : action}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-2">
+              <Label>Action</Label>
+              <Select value={filterAction} onValueChange={setFilterAction}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {actions.map((action) => (
+                    <SelectItem key={action} value={action}>
+                      {action === "all" ? "All Actions" : action}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="col-md-3">
-              <label className="form-label">Date Range</label>
-              <select
-                className="form-select"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-              >
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="custom">Custom Range</option>
-              </select>
+            <div className="space-y-2">
+              <Label>Date Range</Label>
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="custom">Custom Range</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="col-md-3">
-              <label className="form-label">Search</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search logs..."
-              />
+            <div className="space-y-2">
+              <Label>Search</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input className="pl-9" placeholder="Search logs..." />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Logs Table */}
-      <div className="card">
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>User</th>
-                  <th>Action</th>
-                  <th>Details</th>
-                  <th>IP Address</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => (
-                  <tr key={log.id}>
-                    <td className="font-monospace small">{log.timestamp}</td>
-                    <td>
-                      <span
-                        className={`badge bg-${(log.user || "").includes("Admin") ? "danger" : "info"}`}
-                      >
-                        {log.user}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge bg-${
-                          log.action === "Login"
-                            ? "success"
-                            : log.action && log.action.includes("Update")
-                              ? "warning"
-                              : log.action === "Cancel Order"
-                                ? "danger"
-                                : "secondary"
-                        }`}
-                      >
-                        {log.action}
-                      </span>
-                    </td>
-                    <td>{log.details}</td>
-                    <td className="font-monospace small">{log.ip}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <nav className="mt-3">
-            <ul className="pagination justify-content-center">
-              <li className="page-item disabled">
-                <a className="page-link" href="#">
-                  Previous
-                </a>
-              </li>
-              <li className="page-item active">
-                <a className="page-link" href="#">
-                  1
-                </a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  2
-                </a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  3
-                </a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  Next
-                </a>
-              </li>
-            </ul>
-          </nav>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Details</TableHead>
+                <TableHead>IP Address</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="font-mono text-xs">
+                    {log.timestamp}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        (log.user || "").includes("Admin")
+                          ? "destructive"
+                          : "info"
+                      }
+                    >
+                      {log.user}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={actionVariant(log.action)}>
+                      {log.action}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{log.details}</TableCell>
+                  <TableCell className="font-mono text-xs">{log.ip}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <div className="flex items-center justify-center gap-1 border-t p-4">
+          <Button variant="outline" size="sm" disabled>
+            Previous
+          </Button>
+          <Button variant="default" size="sm">
+            1
+          </Button>
+          <Button variant="outline" size="sm">
+            2
+          </Button>
+          <Button variant="outline" size="sm">
+            3
+          </Button>
+          <Button variant="outline" size="sm">
+            Next
+          </Button>
         </div>
-      </div>
+      </Card>
     </AdminLayout>
   );
 }

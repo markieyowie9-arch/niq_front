@@ -1,50 +1,71 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import CustomerLayout from "@/components/layouts/CostumerLayout";
+import { Search } from "lucide-react";
+
+import CustomerLayout from "@/components/layouts/CustomerLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import dataProvider from "@/utils/dataProvider";
+
+const sampleProducts = [
+  {
+    id: 1,
+    name: "Laundry Detergent",
+    price: 120,
+    stock: 15,
+    category: "Detergent",
+    image: "/product1.jpg",
+  },
+  {
+    id: 2,
+    name: "Dishwashing Liquid",
+    price: 85,
+    stock: 0,
+    category: "Dishwashing",
+    image: "/product2.jpg",
+  },
+  {
+    id: 3,
+    name: "Car Shampoo",
+    price: 150,
+    stock: 5,
+    category: "Car Care",
+    image: "/product3.jpg",
+  },
+  {
+    id: 4,
+    name: "Bleach",
+    price: 60,
+    stock: 20,
+    category: "Cleaning",
+    image: "/product4.jpg",
+  },
+];
+
+function StockBadge({ stock }) {
+  if (stock === 0)
+    return <Badge variant="secondary">Out of Stock</Badge>;
+  if (stock < 10)
+    return <Badge variant="warning">Low Stock</Badge>;
+  return <Badge variant="success">In Stock</Badge>;
+}
 
 export default function ProductCatalog() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Sample product data - replace with Firebase
-  const sampleProducts = [
-    {
-      id: 1,
-      name: "Laundry Detergent",
-      price: 120,
-      stock: 15,
-      category: "Detergent",
-      image: "/product1.jpg",
-    },
-    {
-      id: 2,
-      name: "Dishwashing Liquid",
-      price: 85,
-      stock: 0,
-      category: "Dishwashing",
-      image: "/product2.jpg",
-    },
-    {
-      id: 3,
-      name: "Car Shampoo",
-      price: 150,
-      stock: 5,
-      category: "Car Care",
-      image: "/product3.jpg",
-    },
-    {
-      id: 4,
-      name: "Bleach",
-      price: 60,
-      stock: 20,
-      category: "Cleaning",
-      image: "/product4.jpg",
-    },
-  ];
 
   useEffect(() => {
     let mounted = true;
@@ -53,22 +74,12 @@ export default function ProductCatalog() {
       try {
         const prods = await dataProvider.getProducts();
         if (!mounted) return;
-        setProducts(prods && prods.length ? prods : sampleProducts);
-        const cats = [
-          "all",
-          ...new Set(
-            (prods && prods.length ? prods : sampleProducts).map(
-              (p) => p.category,
-            ),
-          ),
-        ];
-        setCategories(cats);
+        const list = prods && prods.length ? prods : sampleProducts;
+        setProducts(list);
+        setCategories(["all", ...new Set(list.map((p) => p.category))]);
       } catch (err) {
         setProducts(sampleProducts);
-        setCategories([
-          "all",
-          ...new Set(sampleProducts.map((p) => p.category)),
-        ]);
+        setCategories(["all", ...new Set(sampleProducts.map((p) => p.category))]);
       }
     }
 
@@ -87,84 +98,85 @@ export default function ProductCatalog() {
     return matchesCategory && matchesSearch;
   });
 
-  const getStockBadge = (stock) => {
-    if (stock === 0)
-      return <span className="badge bg-secondary">Out of Stock</span>;
-    if (stock < 10)
-      return <span className="badge bg-warning text-dark">Low Stock</span>;
-    return <span className="badge bg-success">In Stock</span>;
-  };
-
   return (
     <CustomerLayout>
-      <div className="row">
-        {/* Sidebar Filters */}
-        <div className="col-md-3">
-          <div className="card">
-            <div className="card-body">
-              <h5 className="card-title">Categories</h5>
-              <div className="list-group">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    className={`list-group-item list-group-item-action ${selectedCategory === cat ? "active" : ""}`}
-                    onClick={() => setSelectedCategory(cat)}
-                  >
-                    {cat === "all" ? "All Products" : cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-6 md:grid-cols-4">
+        {/* Sidebar */}
+        <aside className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Categories</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={cn(
+                    "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                    selectedCategory === cat
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted",
+                  )}
+                >
+                  {cat === "all" ? "All Products" : cat}
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+        </aside>
 
         {/* Product Grid */}
-        <div className="col-md-9">
-          {/* Search Bar */}
-          <div className="mb-4">
-            <input
-              type="text"
-              className="form-control"
+        <div className="md:col-span-3">
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          {/* Products */}
-          <div className="row g-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => (
-              <div className="col-md-4" key={product.id}>
-                <div
-                  className={`card h-100 ${product.stock === 0 ? "opacity-50" : ""}`}
-                >
+              <Card
+                key={product.id}
+                className={cn(
+                  "flex h-full flex-col overflow-hidden",
+                  product.stock === 0 && "opacity-60",
+                )}
+              >
+                <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
                   <img
                     src={product.image || "/placeholder.jpg"}
-                    className="card-img-top"
                     alt={product.name}
-                    style={{ height: "200px", objectFit: "cover" }}
+                    className="h-full w-full object-cover"
                   />
-                  <div className="card-body">
-                    <h5 className="card-title">{product.name}</h5>
-                    <p className="card-text fw-bold text-primary">
-                      ₱{product.price}
-                    </p>
-                    <div className="mb-2">{getStockBadge(product.stock)}</div>
-                    {product.stock > 0 ? (
-                      <Link
-                        href={`/store/product/${product.id}`}
-                        className="btn btn-primary w-100"
-                      >
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-base">{product.name}</CardTitle>
+                  <p className="text-lg font-bold text-primary">
+                    ₱{product.price}
+                  </p>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <StockBadge stock={product.stock} />
+                </CardContent>
+                <CardFooter>
+                  {product.stock > 0 ? (
+                    <Button asChild className="w-full">
+                      <Link href={`/store/product/${product.id}`}>
                         View Details
                       </Link>
-                    ) : (
-                      <button className="btn btn-secondary w-100" disabled>
-                        Out of Stock
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+                    </Button>
+                  ) : (
+                    <Button className="w-full" disabled>
+                      Out of Stock
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
             ))}
           </div>
         </div>

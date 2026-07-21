@@ -1,6 +1,5 @@
 // app/layout.js
-import "bootstrap/dist/css/bootstrap.min.css";
-import BootstrapClient from "@/components/BootstrapClient";
+import "@/styles/globals.css";
 import { AuthProvider } from "@/context/AuthProvider";
 
 export const metadata = {
@@ -11,11 +10,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <AuthProvider>
-          {children}
-          <BootstrapClient />
-        </AuthProvider>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
