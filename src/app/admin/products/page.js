@@ -10,10 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -70,7 +67,9 @@ export default function ProductManagement() {
   return (
     <AdminLayout>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Product Management</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          Product Management
+        </h2>
         <Button onClick={() => setShowAddModal(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add New Product
@@ -90,9 +89,7 @@ export default function ProductManagement() {
         <div className="space-y-2">
           <Label>Category</Label>
           <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
+            <SelectTrigger>All Categories</SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="Detergent">Detergent</SelectItem>
@@ -105,9 +102,7 @@ export default function ProductManagement() {
         <div className="space-y-2">
           <Label>Status</Label>
           <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="All Status" />
-            </SelectTrigger>
+            <SelectTrigger>All Status</SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="Active">Active</SelectItem>
@@ -210,9 +205,7 @@ export default function ProductManagement() {
               <div className="space-y-2">
                 <Label>Category *</Label>
                 <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
+                  <SelectTrigger>Select Category</SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Detergent">Detergent</SelectItem>
                     <SelectItem value="Dishwashing">Dishwashing</SelectItem>
@@ -230,11 +223,7 @@ export default function ProductManagement() {
                   <span className="inline-flex items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground">
                     ₱
                   </span>
-                  <Input
-                    type="number"
-                    className="rounded-l-none"
-                    required
-                  />
+                  <Input type="number" className="rounded-l-none" required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -291,7 +280,9 @@ export default function ProductManagement() {
             >
               Cancel
             </Button>
-            <Button>{editingProduct ? "Update Product" : "Save Product"}</Button>
+            <Button>
+              {editingProduct ? "Update Product" : "Save Product"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Download, Search } from "lucide-react";
@@ -19,7 +19,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Table,
@@ -36,6 +35,13 @@ const actionVariant = (action) => {
   if (action && action.includes("Update")) return "warning";
   if (action === "Cancel Order") return "danger";
   return "secondary";
+};
+
+const actionLabels = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  custom: "Custom Range",
 };
 
 export default function AuditTrail() {
@@ -83,7 +89,7 @@ export default function AuditTrail() {
               <Label>User</Label>
               <Select value={filterUser} onValueChange={setFilterUser}>
                 <SelectTrigger>
-                  <SelectValue />
+                  {filterUser === "all" ? "All Users" : filterUser}
                 </SelectTrigger>
                 <SelectContent>
                   {users.map((user) => (
@@ -99,7 +105,7 @@ export default function AuditTrail() {
               <Label>Action</Label>
               <Select value={filterAction} onValueChange={setFilterAction}>
                 <SelectTrigger>
-                  <SelectValue />
+                  {filterAction === "all" ? "All Actions" : filterAction}
                 </SelectTrigger>
                 <SelectContent>
                   {actions.map((action) => (
@@ -114,9 +120,7 @@ export default function AuditTrail() {
             <div className="space-y-2">
               <Label>Date Range</Label>
               <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger>{actionLabels[dateRange] || "Today"}</SelectTrigger>
                 <SelectContent>
                   <SelectItem value="today">Today</SelectItem>
                   <SelectItem value="week">This Week</SelectItem>

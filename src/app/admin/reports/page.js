@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Printer, DollarSign, Receipt, X, Package, Users, TrendingUp, BarChart3 as BarIcon } from "lucide-react";
+import {
+  Printer,
+  DollarSign,
+  Receipt,
+  X,
+  Package,
+  Users,
+  TrendingUp,
+  BarChart3 as BarIcon,
+} from "lucide-react";
 
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -19,7 +28,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Table,
@@ -104,7 +112,8 @@ export default function Reports() {
               <Label>Report Type</Label>
               <Select value={reportType} onValueChange={setReportType}>
                 <SelectTrigger>
-                  <SelectValue />
+                  {reportTypes.find((t) => t.id === reportType)?.name ||
+                    "Select report"}
                 </SelectTrigger>
                 <SelectContent>
                   {reportTypes.map((type) => (
@@ -119,7 +128,13 @@ export default function Reports() {
               <Label>Date Range</Label>
               <Select value={dateRange} onValueChange={setDateRange}>
                 <SelectTrigger>
-                  <SelectValue />
+                  {dateRange === "week"
+                    ? "This Week"
+                    : dateRange === "month"
+                      ? "This Month"
+                      : dateRange === "year"
+                        ? "This Year"
+                        : "Custom Range"}
                 </SelectTrigger>
                 <SelectContent>
                   {dateRanges.map((range) => (
@@ -200,9 +215,7 @@ export default function Reports() {
                     <CardTitle className="text-2xl text-white">156</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-sky-100">
-                      +8% from last month
-                    </p>
+                    <p className="text-xs text-sky-100">+8% from last month</p>
                   </CardContent>
                 </Card>
                 <Card className="border-amber-200 bg-amber-500 text-white">
@@ -213,9 +226,7 @@ export default function Reports() {
                     <CardTitle className="text-2xl text-white">₱293</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-amber-50">
-                      +3% from last month
-                    </p>
+                    <p className="text-xs text-amber-50">+3% from last month</p>
                   </CardContent>
                 </Card>
                 <Card className="border-blue-200 bg-blue-600 text-white">
@@ -320,7 +331,9 @@ export default function Reports() {
                   </TableRow>
                   <TableRow>
                     <TableCell>Car Shampoo</TableCell>
-                    <TableCell className="font-bold text-amber-600">8</TableCell>
+                    <TableCell className="font-bold text-amber-600">
+                      8
+                    </TableCell>
                     <TableCell>15</TableCell>
                     <TableCell>8</TableCell>
                     <TableCell>

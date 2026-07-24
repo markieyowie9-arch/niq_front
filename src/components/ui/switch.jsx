@@ -1,26 +1,26 @@
 "use client";
 
-import * as React from "react";
-import { Switch } from "@base-ui/react/switch";
+  import * as React from "react";
+  import { Switch } from "@base-ui/react/switch";
 
-import { cn } from "@/lib/utils";
+  import { cn } from "@/lib/utils";
 
-const SwitchRoot = React.forwardRef(({ className, ...props }, ref) => (
-  <Switch.Root
-    className={cn(
-      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[checked]:bg-primary data-[unchecked]:bg-input",
-      className,
-    )}
-    {...props}
-    ref={ref}
-  >
-    <Switch.Thumb
+  const SwitchRoot = React.forwardRef(({ className, ...props }, ref) => (
+    <Switch.Root
       className={cn(
-        "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[checked]:translate-x-4 data-[unchecked]:translate-x-0",
+        "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-checked:bg-primary data-unchecked:bg-input",
+        className,
       )}
-    />
-  </Switch.Root>
-));
-SwitchRoot.displayName = "SwitchRoot";
+      {...props}
+      ref={ref}
+    >
+      <Switch.Thumb
+        className={cn(
+          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-checked:translate-x-4 data-unchecked:translate-x-0",
+        )}
+      />
+    </Switch.Root>
+  ));
+  SwitchRoot.displayName = "SwitchRoot";
 
-export { SwitchRoot as Switch };
+  export { SwitchRoot as Switch };
