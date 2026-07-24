@@ -7,19 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 
 export default function CustomerRegister() {
@@ -33,6 +27,29 @@ export default function CustomerRegister() {
     securityQuestion: "",
     securityAnswer: "",
   });
+
+  console.log({
+    Button,
+    Input,
+    Label,
+    Textarea,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    Alert,
+    AlertDescription,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+  });
+
+  const securityQuestions = {
+    pet: "What was your first pet's name?",
+    school: "What was your elementary school?",
+    mother: "What is your mother's maiden name?",
+  };
 
   const [error, setError] = useState("");
 
@@ -120,7 +137,8 @@ export default function CustomerRegister() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a question" />
+                  {securityQuestions[formData.securityQuestion] ||
+                    "Select a question"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pet">
