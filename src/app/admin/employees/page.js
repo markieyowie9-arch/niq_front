@@ -8,14 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +23,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Table,
@@ -62,7 +55,9 @@ export default function EmployeeManagement() {
     employees: false,
     audit: false,
   });
-
+  const roleLabels = { Admin: "Admin", Employee: "Employee" };
+  const [selectedRole, setSelectedRole] = useState("Employee");
+  
   useEffect(() => {
     let mounted = true;
     async function load() {
@@ -77,6 +72,14 @@ export default function EmployeeManagement() {
     load();
     return () => (mounted = false);
   }, []);
+  
+  useEffect(() => {
+    if (editingEmployee) {
+      setSelectedRole(editingEmployee.role);
+    } else if (showAddModal) {
+      setSelectedRole("Employee");
+    }
+  }, [editingEmployee, showAddModal]);
 
   return (
     <AdminLayout>
@@ -120,7 +123,9 @@ export default function EmployeeManagement() {
                   <TableCell>{emp.lastLogin}</TableCell>
                   <TableCell>
                     <Badge
-                      variant={emp.status === "Active" ? "success" : "secondary"}
+                      variant={
+                        emp.status === "Active" ? "success" : "secondary"
+                      }
                     >
                       {emp.status}
                     </Badge>
@@ -178,10 +183,7 @@ export default function EmployeeManagement() {
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input
-                  type="email"
-                  defaultValue={editingEmployee?.email}
-                />
+                <Input type="email" defaultValue={editingEmployee?.email} />
               </div>
             </div>
 
@@ -192,9 +194,9 @@ export default function EmployeeManagement() {
               </div>
               <div className="space-y-2">
                 <Label>Role</Label>
-                <Select defaultValue={editingEmployee?.role || "Employee"}>
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger>
-                    <SelectValue />
+                    {roleLabels[selectedRole] || selectedRole}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Admin">Admin</SelectItem>
@@ -220,9 +222,7 @@ export default function EmployeeManagement() {
             <div className="space-y-2">
               <Label>Security Question</Label>
               <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a question" />
-                </SelectTrigger>
+                <SelectTrigger>Select a question</SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pet">
                     What was your first pet's name?
