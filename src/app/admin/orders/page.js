@@ -9,18 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Table,
@@ -104,7 +98,7 @@ export default function OrderManagement() {
           <Label>Status</Label>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger>
-              <SelectValue />
+              {filterStatus === "all" ? "All Status" : filterStatus}
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
@@ -242,8 +236,7 @@ export default function OrderManagement() {
                       <strong>Order Date:</strong> {selectedOrder.date}
                     </p>
                     <p>
-                      <strong>Payment Method:</strong>{" "}
-                      {selectedOrder.payment}
+                      <strong>Payment Method:</strong> {selectedOrder.payment}
                     </p>
                     <p className="flex items-center gap-2">
                       <strong>Status:</strong>

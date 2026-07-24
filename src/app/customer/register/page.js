@@ -28,23 +28,6 @@ export default function CustomerRegister() {
     securityAnswer: "",
   });
 
-  console.log({
-    Button,
-    Input,
-    Label,
-    Textarea,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Alert,
-    AlertDescription,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-  });
-
   const securityQuestions = {
     pet: "What was your first pet's name?",
     school: "What was your elementary school?",
